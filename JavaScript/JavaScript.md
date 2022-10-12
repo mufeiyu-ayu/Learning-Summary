@@ -1,4 +1,3 @@
-<a name="UIwxC"></a>
 ### 1. 1. 闭包(必考)
 用途：使用闭包主要是为了设计私有的方法和变量
 优点：可以避免变量被全局变量污染
@@ -12,7 +11,6 @@
 
 具体参考链接：[https://juejin.cn/post/7079995358624874509#heading-6](https://juejin.cn/post/7079995358624874509#heading-6)
 
-<a name="GrnPq"></a>
 ### 2.数组去重
 ```javascript
 function unique6(arr) {
@@ -63,7 +61,6 @@ function unique5(arr) {
     return newArr
 }
 ```
-<a name="TgMDW"></a>
 ### 3.反转数组
 条件： 不允许用 split splice reverse
 ```javascript
@@ -84,7 +81,6 @@ function reverse2(arr) {
     return newArr
 }
 ```
-<a name="vlvqK"></a>
 ### 4.防抖节流
 **函数防抖**函数防抖是也优化**高频率**执行js代码的一种手段可以让被调用的函数在一次连续的高频操作中只被调用**一次**
 作用：减少代码执行次数, 提升网页性能应用场景：oninput / onmousemove / onscroll / onresize 等事件
@@ -114,7 +110,6 @@ function throttle(fn, delay) {
 }
 
 ```
-<a name="yBF7o"></a>
 ### 5.排序
 **1.选择排序**
 ```javascript
@@ -144,3 +139,86 @@ function bubbleStort(arr){
   return arr
 }
 ```
+
+### 6.原型
+** 谈谈你对 JS 原型和原型链的理解？**
+原型是指为其它对象提供共享属性访问的对象。在创建对象时，每个对象都包含一个隐式引用指向它的原型对象或者 null，
+原型也是对象，因此它也有自己的原型。这样构成一个原型链。
+**原型链有什么作用？**
+在访问一个对象的属性时，实际上是在查询原型链。这个对象是原型链的第一个元素，先检查它是否包含属性名，如果包含则返回属性值，否则检查原型链上的第二个元素，以此类推。
+**如何实现原型继承呢？**
+有两种方式。一种是通过 Object.create 或者 Object.setPrototypeOf 显式继承另一个对象，将它设置为原型。
+另一种是通过 constructor 构造函数，在使用 new 关键字实例化时，会自动继承 constructor 的 prototype 对象，作为实例的原型。
+在 ES2015 中提供了 class 的风格，背后跟 constructor 工作方式一样，写起来更内聚一些。
+**ConstructorB 如何继承 ConstructorA ？**
+JS 里的继承，是对象跟对象之间的继承。constructor 的主要用途是初始化对象的属性。
+因此，两个 Constructor 之间的继承，需要分开两个步骤。
+第一步是，编写新的 constructor，将两个 constructor 通过 call/apply 的方式，合并它们的属性初始化。按照超类优先的顺序进行。
+第二步是，取出超类和子类的原型对象，通过 Object.create/Object.setPrototypeOf 显式原型继承的方式，设置子类的原型为超类原型。
+整个过程手动编写起来比较繁琐，因此建议通过 ES2015 提供的 class 和 extends 关键字去完成继承，它们内置了上述两个步骤。
+**说一个原型里比较少人知道的特性吗？**
+在 ES3 时代，只有访问属性的 get 操作能触发对原型链的查找。在 ES5 时代，新增了 accessor property 访问器属性的概念。它可以定义属性的 getter/setter 操作。
+具有访问器属性 setter 操作的对象，作为另一个对象的原型的时候，设置属性的 set 操作，也能触发对原型链的查找。
+普通对象的 __proto__ 属性，其实就是在原型链查找出来的，它定义在 Object.prototype 对象上。
+### 7.new关键字
+ **1.new 的时候到底发生了什么？**
+1、创建一个空对象
+2、设置新对象的__proto__属性指向构造函数的原型对象
+3、让构造函数中的this指向新对象，并执行构造函数的函数体
+4、判断构造函数的返回值类型，如果是值类型，则返回新对象。如果是引用类型，就返回这个引用类型的对象。
+**实现一个new**
+```javascript
+function create(Con, ...args) {
+  let obj = {}
+  Object.setPrototypeOf(obj, Con.prototype)
+  let result = Con.apply(obj, args)
+  return result instanceof Object ? result : obj
+}
+```
+### 8. 深拷贝和浅拷贝，以及如何实现对象深拷贝？(重点)
+**深拷贝**修改新变量的值不会影响原有变量的值默认情况下基本数据类型都是深拷贝
+实现方式： 使用JSON.parse(JSON.stringfy())进行深拷贝，但是会让数据中的函数丢失。
+**浅拷贝**修改新变量的值会影响原有变量的值默认情况下引用类型都是浅拷贝
+**实现一个深拷贝**
+**实现一个深拷贝有多种方式，但是很多要么有局限要么对于某些情况有问题**
+**在此我实现一个能让hr眼前一亮的深拷贝**
+```javascript
+   //    深拷贝
+function deepClone(oldObj) {
+    const targetObj = Array.isArray(oldObj) ? [] : {}
+    for (let key in oldObj) {
+        if (oldObj.hasOwnProperty(key)) {
+            if (typeof oldObj[key] === 'object' && oldObj[key] !== null) {
+                targetObj[key] = Array.isArray(oldObj[key]) ? [] : {}
+                targetObj[key] = deepClone(oldObj[key])
+            } else {
+                targetObj[key] = oldObj[key]
+            }
+        }
+    }
+    return targetObj
+}
+```
+```javascript
+const isComplexDataType = obj => (typeof obj === 'object' || typeof obj === 'function') && (obj !== null)
+const deepClone = function (obj, hash = new WeakMap()) {
+  if (obj.constructor === Date) 
+  return new Date(obj)       // 日期对象直接返回一个新的日期对象
+  if (obj.constructor === RegExp)
+  return new RegExp(obj)     //正则对象直接返回一个新的正则对象
+  //如果循环引用了就用 weakMap 来解决
+  if (hash.has(obj)) return hash.get(obj)
+  let allDesc = Object.getOwnPropertyDescriptors(obj)
+  //遍历传入参数所有键的特性
+  let cloneObj = Object.create(Object.getPrototypeOf(obj), allDesc)
+  //继承原型链
+  hash.set(obj, cloneObj)
+  for (let key of Reflect.ownKeys(obj)) { 
+    cloneObj[key] = (isComplexDataType(obj[key]) && typeof obj[key] !== 'function') ?       deepClone(obj[key], hash) : obj[key]
+  }
+  return cloneObj
+}
+```
+
+ 
+
