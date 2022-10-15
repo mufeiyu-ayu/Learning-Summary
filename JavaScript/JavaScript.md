@@ -220,5 +220,146 @@ const deepClone = function (obj, hash = new WeakMap()) {
 }
 ```
 
+### 9.继承
+**call，apply实现继承**
+```javascript
+function Person(myName, myAge) {
+    this.name = myName
+    this.age = myAge
+}
+Person.prototype.say = function () {
+    console.log(this.name, this.age)
+}
+function Student(myName, myAge, myScore) {
+    this.myScore = myScore
+    Person.call(this, myName, myAge)
+}
+Student.prototype.study = function () {
+    console.log('day day up')
+}
+```
+```javascript
+function Person(myName, myAge) {
+    this.name = myName
+    this.age = myAge
+}
+Person.prototype.say = function () {
+    console.log(this.name, this.age)
+}
+function Student(myName, myAge, myScore) {
+    this.name = myName
+    this.age = myAge
+    this.score = myScore
+}
+Student.prototype = new Person()
+Student.prototype.constructor = Student
+
+Student.prototype.study = function () {
+    console.log('day day up')
+}
+```
+**ES6继承**
+```javascript
+class Person{
+    constructor(myName, myAge){
+        // this = stu;
+        this.name = myName; // stu.name = myName;
+        this.age = myAge;   // stu.age = myAge;
+    }
+    say(){
+        console.log(this.name, this.age);
+    }
+}
+
+class Student extends Person{
+    constructor(myName, myAge, myScore){
+        super(myName, myAge);   // 这一行代码相当于在子类中通过call/apply方法借助父类的构造函数
+        this.score = myScore;
+    }
+    study(){
+        console.log("day day up");
+      super.say() //super当做对象使用时，指向父类的原型对象，在静态方法种指向父类
+    }
+}
+
+let stu = new Student("zs", 18, 98);
+stu.say();  // zs 18
+```
+### 10.检测数据类型的方式
+**1.typeof**
+```javascript
+console.log(typeof 2);               // number
+console.log(typeof true);            // boolean
+console.log(typeof 'str');           // string
+console.log(typeof []);              // object    
+console.log(typeof function(){});    // function
+console.log(typeof {});              // object
+console.log(typeof undefined);       // undefined
+console.log(typeof null);            // object
+```
+其中数组、对象、null都会被判断为object，其他判断都正确。
+**2.instanceof**
+`instanceof`可以正确判断对象的类型，**其内部运行机制是判断在其原型链中能否找到该类型的原型**。
+```javascript
+console.log((2).constructor === Number); // true
+console.log((true).constructor === Boolean); // true
+console.log(('str').constructor === String); // true
+console.log(([]).constructor === Array); // true
+console.log((function() {}).constructor === Function); // true
+console.log(({}).constructor === Object); // true
+```
+**3.**`**constructor**`
+有两个作用，一是判断数据的类型，二是对象实例通过 `constrcutor` 对象访问它的构造函数。需要注意，如果创建一个对象来改变它的原型，`constructor`就不能用来判断数据类型了：
+```javascript
+function Fn(){};
  
+Fn.prototype = new Array();
+ 
+var f = new Fn();
+ 
+console.log(f.constructor===Fn);    // false
+console.log(f.constructor===Array); // true
+```
+**4.Object.prototype.toString.call()**
+```javascript
+var a = Object.prototype.toString;
+ 
+console.log(a.call(2));
+console.log(a.call(true));
+console.log(a.call('str'));
+console.log(a.call([]));
+console.log(a.call(function(){}));
+console.log(a.call({}));
+console.log(a.call(undefined));
+console.log(a.call(null));
+```
+同样是检测对象obj调用toString方法，obj.toString()的结果和Object.prototype.toString.call(obj)的结果不一样，这是为什么？
+
+这是因为toString是Object的原型方法，而Array、function等**类型作为Object的实例，都重写了toString方法**。不同的对象类型调用toString方法时，根据原型链的知识，调用的是对应的重写之后的toString方法（function类型返回内容为函数体的字符串，Array类型返回元素组成的字符串…），而不会去调用Object上原型toString方法（返回对象的具体类型），所以采用obj.toString()不能得到其对象类型，只能将obj转换为字符串类型；因此，在想要得到对象的具体类型时，应该调用Object原型上的toString方法。
+### 11.判断数组的方式
+
+- 通过Object.prototype.toString.call()做判断
+- 通过原型链做判断
+- 通过ES6的Array.isArray()做判断
+- 通过instanceof做判断
+- Array.prototype.isPrototypeOf
+### 12.null和undefined的区别
+1.首先 Undefined 和 Null 都是基本数据类型，这两个基本数据类型分别都只有一个值，就是 undefined 和 null。undefined 代表的含义是**未定义**，null 代表的含义是**空对象**。一般变量声明了但还没有定义的时候会返回 undefined，null主要用于赋值给一些可能会返回对象的变量，作为初始化。
+2.undefined 在 JavaScript 中不是一个保留字，这意味着可以使用 undefined 来作为一个变量名，但是这样的做法是非常危险的，它会影响对 undefined 值的判断。我们可以通过一些方法获得安全的 undefined 值，比如说 void 0。
+3.当对这两种类型使用 typeof 进行判断时，Null 类型化会返回 “object”，这是一个历史遗留的问题。当使用双等号对两种类型的值进行比较时会返回 true，使用三个等号时会返回 false。
+### 13.typeof null 为啥返回object
+在 JavaScript 第一个版本中，所有值都存储在 32 位的单元中，每个单元包含一个小的 **类型标签(1-3 bits)** 以及当前要存储值的真实数据。类型标签存储在每个单元的低位中，共有五种数据类型：
+```javascript
+000: object   - 当前存储的数据指向一个对象。
+  1: int      - 当前存储的数据是一个 31 位的有符号整数。
+010: double   - 当前存储的数据指向一个双精度的浮点数。
+100: string   - 当前存储的数据指向一个字符串。
+110: boolean  - 当前存储的数据是布尔值。
+```
+有两种特殊数据类型：
+
+- undefined的值是 (-2)30(一个超出整数范围的数字)；
+- null 的值是机器码 NULL 指针(null 指针的值全是 0)
+
+那也就是说null的类型标签也是000，和Object的类型标签一样，所以会被判定为Object。
 

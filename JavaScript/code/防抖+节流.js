@@ -14,6 +14,7 @@ function throttle(fn, delay) {
         if (timer) return
         timer = setTimeout(() => {
             fn.apply(this, arg)
+            timer = null
         }, delay)
     }
 }

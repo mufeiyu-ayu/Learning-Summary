@@ -1,19 +1,17 @@
 function _new(constructor, ...arg) {
-    if (typeof constructor !== 'function') {
-        throw new Error('constructor is not a function')
-    }
-    let obj = {}
+    const obj = {}
     obj.__proto__ = constructor.prototype
     let res = constructor.apply(obj, arg)
     return typeof res === 'object' ? res : obj
 }
+
 function Person(name, age) {
     this.name = name
     this.age = age
 }
-Person.prototype.obj = function () {
-    console.log(11)
+Person.prototype.obj = {
+    a: 1
 }
-let p = _new(Person, 'jack', 20)
-p.obj()
-console.log(p)
+let person1 = _new(Person, '占山', 22)
+
+console.log(person1.obj)
